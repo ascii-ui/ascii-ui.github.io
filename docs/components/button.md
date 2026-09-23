@@ -89,6 +89,9 @@ The `Button` component uses the `AsciiUIButton` highlight group, which applies a
 
 | Key | Action |
 |-----|--------|
-| `h` / `l` | Move focus to the previous / next focusable element |
-| `j` / `k` | Move focus to the element below / above |
+| `h` / `l` | Move focus to the previous / next focusable element (linear order) |
+| `j` / `k` | Move focus to the closest focusable element below / above (2D, by column distance) |
 | `<CR>` | Trigger `on_press` |
+
+See [ui.mount](../mount.md#default-keyboard-bindings) for how vertical
+(2D) navigation picks the nearest focusable by column distance.

@@ -155,6 +155,10 @@ The error screen shows:
 - **Message** — The actual error message
 - **Hint** — Contextual guidance for fixing the issue
 
+Multi-line messages and hints are split on newlines into separate display
+lines, so the error screen itself never contains embedded newline
+characters (single-line `Segment` content cannot hold newlines).
+
 ---
 
 ## Debugging Tips

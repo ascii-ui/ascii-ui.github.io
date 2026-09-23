@@ -81,7 +81,7 @@ ui.mount(MyApp, ui.viewports.StdoutViewport.new())
 1. **Initial render** — Calls `fiber.render(RootComponent)` to build the fiber tree and produce the first buffer.
 2. **Open viewport** — Calls `viewport:open()`. For the default floating window this creates the Neovim buffer and window.
 3. **Update viewport** — Calls `viewport:update(buffer)` to write the rendered content.
-4. **Keyboard bindings** — Registers `vim.on_key` for `h`/`j`/`k`/`l` navigation between focusable segments.
+4. **Keyboard bindings** — Registers `vim.on_key` for `h`/`j`/`k`/`l` navigation between focusable segments. Horizontal keys (`h`/`l`) move to the previous/next focusable in linear order, while vertical keys (`j`/`k`) move spatially to the closest focusable above or below by column distance.
 5. **State change listener** — On every `useState` setter call, rerenders and refreshes the viewport.
 6. **Cleanup** — On `WinClosed`, detaches all bindings, calls `root:unmount()` to clean up effects and timers, calls `viewport:close()`, and runs `useEffect` cleanups.
 
@@ -139,12 +139,33 @@ These bindings are active while the ascii-ui window is focused:
 
 | Key | Action |
 |-----|--------|
-| `h` | Move focus left / to the previous focusable element |
-| `l` | Move focus right / to the next focusable element |
-| `k` | Move focus up |
-| `j` | Move focus down |
+| `h` | Move focus left / to the previous focusable element (linear order) |
+| `l` | Move focus right / to the next focusable element (linear order) |
+| `k` | Move focus up (2D: closest focusable above by column distance) |
+| `j` | Move focus down (2D: closest focusable below by column distance) |
 | `<CR>` | Trigger the `SELECT` interaction on the focused element |
 | `q` | Close the window (configurable via `ui.setup`) |
+
+### Vertical (2D) navigation
+
+`j` and `k` navigate spatially, not linearly. From the current cursor
+position, ascii-ui searches line by line above (`k`) or below (`j`) and
+lands on the focusable with the smallest column distance on the nearest
+line that has one. If no focusable exists in that direction, focus stays
+put.
+
+```
+Line 1: [A]  [B]   → A at col 0, B at col 3
+Line 2: [C]  [D]   → C at col 0, D at col 3
+```
+
+- With focus on `D` (line 2, col 3), pressing `k` moves to `B`
+  (line 1, col 3) — not to `C`, which would be previous in linear order.
+- With focus on `B` (line 1, col 3), pressing `j` moves to `D`
+  (line 2, col 3).
+- When columns don't align exactly, the closest column wins. For example,
+  with `A` at col 0 and `B` at col 11 on line 1 and `C` at col 6 on
+  line 2, pressing `k` from `C` moves to `B` (distance 5 beats distance 6).
 
 ---
 
